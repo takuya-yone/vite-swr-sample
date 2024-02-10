@@ -1,33 +1,70 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import useSWR from 'swr'
 import './App.css'
 
+export type GithubUserType = {
+  login: string
+  id: number
+  node_id: string
+  avatar_url: string
+  gravatar_id: string
+  url: string
+  html_url: string
+  followers_url: string
+  following_url: string
+  gists_url: string
+  starred_url: string
+  subscriptions_url: string
+  organizations_url: string
+  repos_url: string
+  events_url: string
+  received_events_url: string
+  type: 'User'
+  site_admin: boolean
+  name: string
+  company: null
+  blog: string
+  location: string
+  email: string
+  hireable: string
+  bio: string
+  twitter_username: string
+  public_repos: number
+  public_gists: number
+  followers: number
+  following: number
+  created_at: Date
+  updated_at: Date
+}
+
+async function fetcher(key: string, init?: RequestInit) {
+  return fetch(key, init).then((res) => res.json() as Promise<GithubUserType | null>)
+}
+
 function App() {
-  const [count, setCount] = useState(0)
+  const githubUserName = 'takuya-yone'
+  const { data: user, error } = useSWR(
+    `https://api.github.com/users/${githubUserName}`,
+    fetcher,
+    // {refreshInterval:3}
+  )
 
   return (
     <>
       <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+        {typeof user === 'undefined' ? (
+          <p>loading...</p>
+        ) : user ? (
+          <>
+            <p>{user.name}</p>
+            <p>{user.login}</p>
+            <p>{user.bio}</p>
+            <p>{user.created_at.toString()}</p>
+          </>
+        ) : (
+          <a href="/login">Login</a>
+        )}
+        {error ? <p>{error}</p> : null}
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
     </>
   )
 }
